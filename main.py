@@ -79,7 +79,7 @@ print("hsv_img[600,600]", hsv_img[600,600])
 blurred_img = cv2.GaussianBlur(small_img, (11,11), 0)
 cv2.imshow("Blurred Kedi", blurred_img)
 #
-
+# 20:30
 
 cv2.waitKey(0) # Kullanıcının herhangi bir tuşa basmasını bekle.
 cv2.destroyAllWindows()
