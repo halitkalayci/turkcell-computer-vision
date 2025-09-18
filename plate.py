@@ -42,6 +42,38 @@ def detect_plate(img_path):
     cv2.drawContours(all_contours_image, contours, -1, (0,0,255), 1)
     cv2.imshow("All Contours Image", all_contours_image)
 
+    plate_contour = None
+
+    for contour in contours:
+        perimeter = cv2.arcLength(contour, True)
+        approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True) # Douglas-Peucker
+        if len(approx) == 4:
+            print("4 köşeli plaka adayı bulundu.")
+            (x,y,w,h) = cv2.boundingRect(approx)
+            aspect_ratio = float(w) / h
+            area = cv2.contourArea(contour)
+
+            if aspect_ratio > 2.5 and aspect_ratio < 5.5 and area > 1000: # araba? arka cam?
+                plate_contour = approx
+                break
+
+    output_image = img_resized.copy()
+    if plate_contour is not None:
+        cv2.drawContours(output_image, [plate_contour], -1, (0, 255, 0), 3)
+        print(f"'{img_path}' için potansiyel plaka bulundu.")
+    else:
+        print(f"'{img_path}' için plaka tespit edilemedi.")
+    
+    cv2.imshow(f"Adim 5b: SONUC - Tespit Edilen Plaka - {img_path}", output_image)
+    
+    # Crop only plate
+    if plate_contour is not None:
+        (x,y,w,h) = cv2.boundingRect(plate_contour)
+        plate_img = img_resized[y:y+h, x:x+w]
+        cv2.imshow("Plate Image", plate_img)
+    else:
+        print(f"'{img_path}' için plaka tespit edilemedi.")
+    
 
 
     cv2.waitKey(0)
