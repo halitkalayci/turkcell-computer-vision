@@ -79,4 +79,12 @@ def detect_plate(img_path):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-detect_plate("data/1.jpg");
+#detect_plate("data/1.jpg");
+detect_plate("data/1002.jpg");
+
+#Yapay Zeka -> Entegre
+# Neural Network -> Sinir Ağları
+# CNN -> Convolutional Neural Network
+
+# 1- transfer-learning - fine-tuning
+# 2- tamamen sıfırdan kendi modelimizi üretmek
