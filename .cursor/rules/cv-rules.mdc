@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+Görüntü işleme kütüphanesi olarak yalnızca "opencv" kullan.

@@ -46,7 +46,6 @@ for i in range(1, num_labels):
 print("obj_count", obj_count)
 cv2.imshow("Output Image", output_img)
 
-
 import numpy as np
 median_val = np.median(blurred_img)
 sigma = 0.33
