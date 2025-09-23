@@ -3,12 +3,10 @@ from PIL import Image
 
 model = YOLO("runs/detect/train/weights/best.pt") #Fine-Tune edilmiş versiyon
 
-IMG_SIZE = 640
 
-img = Image.open("1.jpg")
-img = img.resize((IMG_SIZE, IMG_SIZE))
+img = Image.open("2.jpg")
 
-results = model.predict(img, save=True)
+results = model.predict(source=img, save=True, imgsz=640, conf=0.25)
 
 for result in results:
     boxes = result.boxes
