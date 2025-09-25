@@ -2,6 +2,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix
+import cv2
 
 (X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data()
 
@@ -79,4 +80,19 @@ def confusion_matrix():
             plt.text(j, i, cm[i, j], ha="center", va="center", color="red")
     plt.show()
 
-confusion_matrix()
+def predict(img_path):
+    model = load_model()
+    img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+    img = cv2.resize(img, (28,28), interpolation=cv2.INTER_AREA)
+
+    img = img/255.0
+    img = img.reshape(-1,28,28,1)
+
+    probs = model.predict(img)[0]
+    pred = np.argmax(probs)
+    return pred,probs
+
+#confusion_matrix()
+pred, probs = predict("image3.png")
+print(f"Tahmin: {pred}")
+print(f"Olasılıklar: {probs}")
