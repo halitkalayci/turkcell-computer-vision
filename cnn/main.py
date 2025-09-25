@@ -26,9 +26,14 @@ X_test = X_test.reshape(-1,28,28,1)
 
 
 def define_and_train_model():
-    # Sequential -> Katmanları sıralı ilerleyen bir NN
-    # Aktivasyon Katmanı => Öğrendiğin bilgileri bana göster, ben hangilerini bu kapıdan geçirebileceğinin kararını vereceğim.
-    # ReLU -> Rectified Linear Unit -> Yalnızca Pozitifler geçer.
+    # Early Stopping => 27. epochta accuracy %99 du, 28,29,30'da azalmaya başladı (patience sayısı kadar) azalmayı göz ardı et.
+    # geçtiği an durdur. 
+
+    callbacks = [
+        # düşüşten 3. epoch geçtikten sonra eğitimi durdur.
+        tf.keras.callbacks.EarlyStopping(patience=3, monitor="val_accuracy", restore_best_weights=True) 
+    ]
+
     model = tf.keras.Sequential([
         tf.keras.layers.Conv2D(filters=32, kernel_size=(3,3), activation="relu", input_shape=(28,28,1)), # 32 dedektif bilgi çıkarımı yap.
         tf.keras.layers.MaxPooling2D(pool_size=(2,2)), #Bilgiyi özetler.
@@ -38,21 +43,9 @@ def define_and_train_model():
         tf.keras.layers.Dense(units=128, activation="relu"), # 128 nöronluk karar mekanizması.
         tf.keras.layers.Dense(units=10, activation="softmax") # 10 nöronluk karar mekanizması.
     ])
-    # 32 filtre
-    # 1.filter (dedektif) => fotoğrafı tamamen tara sadece dikey çizgileri bul
-    # 2.filter (dedektif) => fotoğrafı tamamen tara sadece yatay çizgileri bul
-    # 3.filter (dedektif) => fotoğrafı tamamen tara sadece çapraz çizgileri bul
-    # 32 adet Feature Map
     model.summary()
-    # Eğitime hazır hale getirmek.
-
-    # Optimizer -> İleri yayılım sırasında, parametrelerin daha iyi hale getirilebilmesini sağlar. Ağırlıkları şu algoritma ile güncelle.
-    # Loss -> Nöronda ne kadar bilgi kaybettim?
-    # Metrics -> Bu model eğitilirken hangi metrikler her epoch için hesaplansın?
     model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-
-    model.fit(X_train, y_train, epochs=5, validation_split=0.2, batch_size=25)
-
+    model.fit(X_train, y_train, epochs=5, validation_split=0.2, batch_size=25, callbacks=callbacks)
     model.save("mnist_model.keras")
 
 def load_model():
