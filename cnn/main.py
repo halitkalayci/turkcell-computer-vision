@@ -55,7 +55,7 @@ def define_and_train_model():
 #define_and_train_model()
 
 def load_model():
-    model = tf.keras.models.load_model("best_model.keras")
+    model = tf.keras.models.load_model("aug_best_model.keras")
     return model
 
 def confusion_matrix():
@@ -109,53 +109,43 @@ def predict_x_images(number):
 
     plt.show()
     
+# Data Augementation -> Veriyi belirli taktiklerle çoğaltmak
+def train_data_augmentation():
+    data_augmentation = tf.keras.Sequential([
+        tf.keras.layers.RandomRotation(0.08), # +- %8 oranında döndür
+        tf.keras.layers.RandomZoom(0.08), # +- %8 oranında zoom yap
+        tf.keras.layers.RandomTranslation(0.08, 0.08), # +- %8 oranında translation yap
+        tf.keras.layers.RandomFlip("horizontal"), # yatay aynalama
+        tf.keras.layers.RandomFlip("vertical"), # dikey aynalama
+    ])
+    callbacks = [
+        # düşüşten 3. epoch geçtikten sonra eğitimi durdur.
+        tf.keras.callbacks.EarlyStopping(patience=6, monitor="val_accuracy", restore_best_weights=True),
+        # tüm epochlar içinden en iyi skora sahip olanı seç.
+        tf.keras.callbacks.ModelCheckpoint("aug_best_model.keras", save_best_only=True),
+        # learning rate oranını otomatik düşür.
+        tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.3, patience=3, min_lr=0.0001)
+    ]
+    inputs = tf.keras.Input(shape=(28,28,1))
+    aug_model = data_augmentation(inputs)
+    aug_model = tf.keras.layers.Conv2D(filters=32, kernel_size=(3,3), activation="relu")(aug_model)
+    aug_model = tf.keras.layers.MaxPooling2D(pool_size=(2,2))(aug_model)
+    aug_model = tf.keras.layers.Conv2D(filters=64, kernel_size=(3,3), activation="relu")(aug_model)
+    aug_model = tf.keras.layers.MaxPooling2D(pool_size=(2,2))(aug_model)
+    aug_model = tf.keras.layers.Flatten()(aug_model)
+    aug_model = tf.keras.layers.Dense(units=128, activation="relu")(aug_model)
+    outputs = tf.keras.layers.Dense(units=10, activation="softmax")(aug_model)
+
+    aug_model = tf.keras.models.Model(inputs, outputs)
+
+    aug_model.summary()
+    aug_model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+    aug_model.fit(X_train, y_train, epochs=100, validation_split=0.2, batch_size=25, callbacks=callbacks)
+    aug_model.save("aug_model.keras")
+
 #confusion_matrix()
-#pred, probs = predict("image2.png")
-#print(f"Tahmin: {pred}")
-#print(f"Olasılıklar: {probs}")
+pred, probs = predict("image2.png")
+print(f"Tahmin: {pred}")
+print(f"Olasılıklar: {probs}")
 #predict_x_images(20)
-
-# Grad-Cam -> Açıklanabilirlik
-def grad_cam(img, model, last_conv_layer_name, pred_index=None):
-    #ısı haritası (heatmap)
-    grad_model = tf.keras.models.Model(
-        inputs=model.input,
-        outputs=[model.get_layer(last_conv_layer_name).output, model.output]
-    )
-
-    with tf.GradientTape() as tape:
-        conv_outputs, predictions = grad_model(img)
-        if pred_index is None:
-            pred_index = tf.argmax(predictions[0])
-        class_channel = predictions[:, pred_index]
-
-    # tüm ağırlıklar
-    grads = tape.gradient(class_channel, conv_outputs)
-
-    # kanal başına ortalama gradient (ağırlık)
-    pooled_grads = tf.reduce_mean(grads, axis=(0,1,2))
-
-    conv_outputs = conv_outputs[0]
-    heatmap = tf.reduce_sum(tf.multiply(pooled_grads, conv_outputs), axis=-1)
-
-    heatmap = tf.maximum(heatmap, 0)
-    heatmap /= tf.reduce_max(heatmap)
-    heatmap = heatmap.numpy()
-    return heatmap
-
-indx = np.random.randint(len(X_test))
-img = X_test[indx].reshape(1,28,28,1)
-
-model = load_model()
-_ = model(np.zeros((1,28,28,1)))
-heatmap = grad_cam(img, model, "conv2d_1")
-
-plt.subplot(1,2,1)
-plt.imshow(img.reshape(28,28), cmap="gray")
-plt.title("Original Image")
-
-plt.subplot(1,2,2)
-plt.imshow(img[0].reshape(28,28), cmap="gray")
-plt.imshow(heatmap, cmap="jet", alpha=0.5)
-plt.title("Heatmap")
-plt.show()
+#train_data_augmentation()
