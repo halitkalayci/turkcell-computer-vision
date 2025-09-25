@@ -113,4 +113,49 @@ def predict_x_images(number):
 #pred, probs = predict("image2.png")
 #print(f"Tahmin: {pred}")
 #print(f"Olasılıklar: {probs}")
-predict_x_images(20)
+#predict_x_images(20)
+
+# Grad-Cam -> Açıklanabilirlik
+def grad_cam(img, model, last_conv_layer_name, pred_index=None):
+    #ısı haritası (heatmap)
+    grad_model = tf.keras.models.Model(
+        inputs=model.input,
+        outputs=[model.get_layer(last_conv_layer_name).output, model.output]
+    )
+
+    with tf.GradientTape() as tape:
+        conv_outputs, predictions = grad_model(img)
+        if pred_index is None:
+            pred_index = tf.argmax(predictions[0])
+        class_channel = predictions[:, pred_index]
+
+    # tüm ağırlıklar
+    grads = tape.gradient(class_channel, conv_outputs)
+
+    # kanal başına ortalama gradient (ağırlık)
+    pooled_grads = tf.reduce_mean(grads, axis=(0,1,2))
+
+    conv_outputs = conv_outputs[0]
+    heatmap = tf.reduce_sum(tf.multiply(pooled_grads, conv_outputs), axis=-1)
+
+    heatmap = tf.maximum(heatmap, 0)
+    heatmap /= tf.reduce_max(heatmap)
+    heatmap = heatmap.numpy()
+    return heatmap
+
+indx = np.random.randint(len(X_test))
+img = X_test[indx].reshape(1,28,28,1)
+
+model = load_model()
+_ = model(np.zeros((1,28,28,1)))
+heatmap = grad_cam(img, model, "conv2d_1")
+
+plt.subplot(1,2,1)
+plt.imshow(img.reshape(28,28), cmap="gray")
+plt.title("Original Image")
+
+plt.subplot(1,2,2)
+plt.imshow(img[0].reshape(28,28), cmap="gray")
+plt.imshow(heatmap, cmap="jet", alpha=0.5)
+plt.title("Heatmap")
+plt.show()
