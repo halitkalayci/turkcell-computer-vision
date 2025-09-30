@@ -5,8 +5,6 @@ import generator
 import discriminator
 import os 
 from torchvision import datasets, transforms
-print(torch.version.cuda)
-print(torch.cuda.is_available())
 
 # python -m venv venv
 # .\venv\Scripts\activate
@@ -105,14 +103,14 @@ if __name__ == "__main__":
         avg_g_loss = g_loss_epoch / len(dataloader)
         print(f"Epoch [{epoch+1}/{EPOCHS}] | D_loss: {avg_d_loss:.4f} | G_loss: {avg_g_loss:.4f}")
         
-        if (epoch + 1) % SAVE_IMG_EVERY == 0:
+        if (epoch + 1) % SAVE_IMG_EVERY == 0 or (epoch + 1) == 1 or (epoch + 1) == EPOCHS:
             G.eval()
             with torch.no_grad():
                 fake = G(fixed_noise)
             save_images(fake.detach(), epoch+1)
             G.train()
 
-        if (epoch + 1) % SAVE_CHECKPOINT_EVERY == 0:
+        if (epoch + 1) % SAVE_CHECKPOINT_EVERY == 0 or (epoch + 1) == EPOCHS:
             checkpoint = {
                 'epoch': epoch,
                 'G_state_dict': G.state_dict(),
