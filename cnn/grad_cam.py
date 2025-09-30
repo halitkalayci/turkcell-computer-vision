@@ -101,7 +101,7 @@ if __name__ == '__main__':
     if model:
         # You should have 'image.png' or another image file in the cnn directory
         # to test this script.
-        image_path = "image3.png" 
+        image_path = "image2.png" 
         try:
             show_grad_cam(image_path, model)
         except Exception as e:
