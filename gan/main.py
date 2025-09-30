@@ -68,6 +68,8 @@ if __name__ == "__main__":
         plt.close()
     
     for epoch in range(EPOCHS):
+        d_loss_epoch = 0
+        g_loss_epoch = 0
         for real, _ in dataloader:
             real = real.to(device)
             bsz = real.size(0)
@@ -96,9 +98,28 @@ if __name__ == "__main__":
             optim_G.zero_grad()
             G_loss.backward()
             optim_G.step()
+            d_loss_epoch += D_loss.item()
+            g_loss_epoch += G_loss.item()
+            
+        avg_d_loss = d_loss_epoch / len(dataloader)
+        avg_g_loss = g_loss_epoch / len(dataloader)
+        print(f"Epoch [{epoch+1}/{EPOCHS}] | D_loss: {avg_d_loss:.4f} | G_loss: {avg_g_loss:.4f}")
+        
         if (epoch + 1) % SAVE_IMG_EVERY == 0:
             G.eval()
             with torch.no_grad():
                 fake = G(fixed_noise)
-            save_images(fake.detach(), epoch)
+            save_images(fake.detach(), epoch+1)
             G.train()
+
+        if (epoch + 1) % SAVE_CHECKPOINT_EVERY == 0:
+            checkpoint = {
+                'epoch': epoch,
+                'G_state_dict': G.state_dict(),
+                'D_state_dict': D.state_dict(),
+                'optim_G_state_dict': optim_G.state_dict(),
+                'optim_D_state_dict': optim_D.state_dict(),
+            }
+            ckpt_path = os.path.join(CKPT_DIR, f"checkpoint_epoch_{epoch+1}.pth")
+            torch.save(checkpoint, ckpt_path)
+            print(f"Checkpoint saved to {ckpt_path}")
