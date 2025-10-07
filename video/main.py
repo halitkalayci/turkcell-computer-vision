@@ -44,5 +44,12 @@ def main():
         display = frame.copy()
 
         cv2.imshow(title, display)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q") or key == 27:
+            print("[INFO] Çıkış yapılıyor...")
+            break
+
+    capture.release()
+    cv2.destroyAllWindows()
 if __name__ == "__main__":
     main()
