@@ -33,6 +33,13 @@ def resize_keep_aspect(frame, max_w=960):
 MODE_RAW = 1
 MODE_GRAY = 2
 MODE_MOTION = 3
+MODE_BACKGROUND = 4
+
+bg = cv2.createBackgroundSubtractorMOG2(
+    history=300, #model geçmişi => daha yüksek = daha yumuşak arkaplan kaldırma
+    varThreshold=25, # piksel sınıflandırma eşiği
+    detectShadows=True # gölge algılama
+)
 
 
 def main():
@@ -65,7 +72,7 @@ def main():
 
         display = frame.copy()
 
-        mode = MODE_MOTION
+        mode = MODE_BACKGROUND
 
         if mode == MODE_GRAY:
             display = cv2.cvtColor(display, cv2.COLOR_BGR2GRAY)
@@ -85,6 +92,10 @@ def main():
                     cv2.rectangle(display, (x, y), (x + w, y + h), (0, 140, 255), 2)
             # Bir sonraki frame için mevcut gray'i sakla
             prev_gray = gray.copy()
+        elif mode == MODE_BACKGROUND:
+            mask = bg.apply(display)
+            mask_vis = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+            display = np.hstack([display, mask_vis])
 
         cv2.putText(display, f"FPS: {fps:.1f}", (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (20, 220, 20), 2, cv2.LINE_AA)
 
