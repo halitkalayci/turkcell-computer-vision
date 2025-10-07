@@ -64,7 +64,6 @@ def main():
         fps = sum(fps_hist) / len(fps_hist) if fps_hist else 0.0
 
         display = frame.copy()
-        prev_gray = cv2.cvtColor(display, cv2.COLOR_BGR2GRAY)
 
         mode = MODE_MOTION
 
@@ -84,6 +83,8 @@ def main():
                         continue
                     x, y, w, h = cv2.boundingRect(c)
                     cv2.rectangle(display, (x, y), (x + w, y + h), (0, 140, 255), 2)
+            # Bir sonraki frame için mevcut gray'i sakla
+            prev_gray = gray.copy()
 
         cv2.putText(display, f"FPS: {fps:.1f}", (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (20, 220, 20), 2, cv2.LINE_AA)
 
