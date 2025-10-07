@@ -1,13 +1,14 @@
 from collections import deque
 import cv2
 import time
+import numpy as np
 
 def open_source():
     """
     OpenCV'nin örnek videosunu (vtest.avi) açmayı dene.
     """
     try:
-        sample_path = cv2.samples.findFile("vtest.avi")
+        sample_path = cv2.samples.findFile(r"C:\Users\PC1\Desktop\Projects\Personal\Python\cv\video\vtest.avi")
         capture = cv2.VideoCapture(sample_path)
         if capture.isOpened():
             print("[INFO] Kaynak: OpenCV samples/vtest.avi")
@@ -29,6 +30,11 @@ def resize_keep_aspect(frame, max_w=960):
     new_size = (int(w*scale), int(h*scale))
     return cv2.resize(frame, new_size)
 
+MODE_RAW = 1
+MODE_GRAY = 2
+MODE_MOTION = 3
+
+
 def main():
     capture = open_source()
     title = "VIDEO ISLEME GIRIS"
@@ -42,6 +48,8 @@ def main():
     # FPS ölçümü için değerler.
     fps_hist = deque(maxlen=20)
     t_prev = time.time()
+
+    prev_gray = None
     while True:
         ok, frame = capture.read()
         #capture.grab() # bir kare atla.
@@ -54,18 +62,32 @@ def main():
         fps_hist.append(1.0 / (now - t_prev) if now > t_prev else 0.0)
         t_prev = now
         fps = sum(fps_hist) / len(fps_hist) if fps_hist else 0.0
-        print("[INFO] FPS: ", fps)
 
         display = frame.copy()
+        prev_gray = cv2.cvtColor(display, cv2.COLOR_BGR2GRAY)
 
-        cv2.putText(display, f"FPS: {fps:.1f}", (10, 28), 
-        cv2.FONT_HERSHEY_SIMPLEX, 
-        0.8, 
-        (20, 220, 20), 
-        2, cv2.LINE_AA)
-        
+        mode = MODE_MOTION
+
+        if mode == MODE_GRAY:
+            display = cv2.cvtColor(display, cv2.COLOR_BGR2GRAY)
+        elif mode == MODE_MOTION:
+            #Basit hareket algılama algoritması:
+            gray = cv2.cvtColor(display, cv2.COLOR_BGR2GRAY)
+            if prev_gray is not None:
+                diff = cv2.absdiff(gray, prev_gray)
+                diff = cv2.GaussianBlur(diff, (5, 5), 0)
+                _, th = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)
+                th = cv2.morphologyEx(th, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8), iterations=1)
+                contours, _ = cv2.findContours(th, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                for c in contours:
+                    if cv2.contourArea(c) < 400:
+                        continue
+                    x, y, w, h = cv2.boundingRect(c)
+                    cv2.rectangle(display, (x, y), (x + w, y + h), (0, 140, 255), 2)
+
+        cv2.putText(display, f"FPS: {fps:.1f}", (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (20, 220, 20), 2, cv2.LINE_AA)
+
         cv2.imshow(title, display)
-  
 
         key = cv2.waitKey(delay) & 0xFF # 1ms arayla kullanıcı tuşa basmıyosa 1ms aralıkta bekle ve devam et.
 
