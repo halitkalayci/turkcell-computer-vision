@@ -22,13 +22,14 @@ print(cleaned_tokens)
 
 # TODO: nltk stemmer Türkçe
 # Stemming
-from nltk.stem.snowball import SnowballStemmer
-tr_stemmer = SnowballStemmer("turkish")
+print("********** Stemming ***********")
+from snowballstemmer import TurkishStemmer
+tr_stemmer = TurkishStemmer()
 
-words = ["kitaplar","gözlükçü","koşuyordu","güzelleştiriyor","gidiyorum","kitapçı","gözlük"]
+words = ["kitaplar","gözlükçüler","koşuyordu","güzelleştiriyor","gidiyorum","kitapçı","gözlük"]
 
 for word in words:
-    print(f"{word} -> {tr_stemmer.stem(word)}")
+    print(f"{word} -> {tr_stemmer.stemWord(word)}")
 #
 
 
