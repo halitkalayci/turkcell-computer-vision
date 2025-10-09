@@ -1,8 +1,9 @@
 import nltk
 
-#nltk.download("punkt")
-#nltk.download("punkt_tab")
-#nltk.download("stopwords")
+nltk.download("punkt")
+nltk.download("punkt_tab")
+nltk.download("stopwords")
+nltk.download("wordnet")
 
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -18,6 +19,18 @@ cleaned_tokens = [token for token in tokens if token.lower() not in turkish_stop
 print(tokens)
 print("********** Cleaned ***********")
 print(cleaned_tokens)
+
+# TODO: nltk stemmer Türkçe
+# Stemming
+from nltk.stem.snowball import SnowballStemmer
+tr_stemmer = SnowballStemmer("turkish")
+
+words = ["kitaplar","gözlükçü","koşuyordu","güzelleştiriyor","gidiyorum","kitapçı","gözlük"]
+
+for word in words:
+    print(f"{word} -> {tr_stemmer.stem(word)}")
+#
+
 
 # The goal of the task (Görevin amacı)
 # Duygu analizi -> noktalama işaretleri önemli, dolayısıyla noktalama işarelteri tek başına ayrı birer eleman olmalı.
