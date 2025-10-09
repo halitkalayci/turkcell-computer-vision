@@ -1,0 +1,1 @@
+docker run -it -d -p 8080:8080 -v %cd%/mydata:/label-studio/data heartexlabs/label-studio:latest label-studio --log-level DEBUG

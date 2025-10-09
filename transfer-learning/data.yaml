@@ -1,7 +1,0 @@
-path: C:\Users\PC1\Desktop\Projects\Personal\Python\cv\transfer-learning\data
-train: images
-val: images
-
-nc: 1
-names:
-  0: plaka
