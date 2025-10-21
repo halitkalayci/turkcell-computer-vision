@@ -7,3 +7,5 @@ venv/
 gan/venv/
 **/venv/
 test
+**/nlp-env
+nlp-env/

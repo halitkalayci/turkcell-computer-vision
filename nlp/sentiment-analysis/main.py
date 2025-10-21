@@ -62,6 +62,13 @@ pipe = Pipeline([
     ))
 ])
 
+# 1-100 -> "facia" -20
+# 1-100 -> "güzel" +5
+# [513,510,235,162]
+# -20
+# +5
+
+
 # GridSearchCV
 model = pipe.fit(X_train, y_train)
 
